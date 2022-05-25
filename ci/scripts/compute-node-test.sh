@@ -3,6 +3,10 @@
 # Exits as soon as any line fails.
 set -euo pipefail
 
+echo "--- Install required tools"
+rustup default "$(cat ./rust-toolchain)" && rustup component add llvm-tools-preview clippy
+cargo install cargo-llvm-cov
+
 echo "--- Run rust clippy check"
 cargo clippy --all-targets --all-features --locked -- -D warnings
 

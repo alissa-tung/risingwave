@@ -2,26 +2,22 @@ FROM ubuntu:20.04 AS risingwave-build-env
 
 ENV LANG en_US.utf8
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install make build-essential cmake protobuf-compiler curl openssl libssl-dev pkg-config bash openjdk-11-jdk wget unzip git tmux
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install make build-essential cmake protobuf-compiler curl \
+    openssl libssl-dev pkg-config bash openjdk-11-jdk wget unzip git tmux lld
 
 SHELL ["/bin/bash", "-c"]
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --no-modify-path --default-toolchain none -y
 
-RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v1.4.0/buf-$(uname -s)-$(uname -m).tar.gz" | tar -xvzf - -C /usr/local --strip-components 1
+RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v1.4.0/buf-$(uname -s)-$(uname -m).tar.gz" | \
+    tar -xvzf - -C /usr/local --strip-components 1
 
 RUN mkdir -p /risingwave
 
 WORKDIR /risingwave
 
 ENV PATH /root/.cargo/bin/:$PATH
-
-RUN rustup self update \
-  && rustup set profile minimal \
-  && rustup default nightly-2022-05-09 \
-  && rustup component add rustfmt llvm-tools-preview clippy
-
-RUN cargo install cargo-sort cargo-hakari cargo-llvm-cov
 
 RUN wget https://github.com/risinglightdb/sqllogictest-rs/releases/download/v0.3.4/sqllogictest-linux-amd64.tar.gz -O - | tar xz && \
     mv sqllogictest /usr/local/bin/sqllogictest && \
